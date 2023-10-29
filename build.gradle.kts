@@ -1,22 +1,43 @@
 plugins {
-    kotlin("jvm") version "1.9.0"
+    id("com.diffplug.spotless")
+    id("org.jetbrains.kotlin.jvm") apply false
 }
 
-group = "io.connorwyatt"
-version = "1.0.0"
+tasks {
+    create("installLocalGitHook") {
+        delete {
+            delete(File(rootDir, ".git/hooks/pre-commit"))
+        }
+        copy {
+            from(File(rootDir, "scripts/pre-commit"))
+            into(File(rootDir, ".git/hooks"))
+            fileMode = 0b111101101
+        }
+    }
 
-repositories {
-    mavenCentral()
+    build {
+        dependsOn("installLocalGitHook")
+    }
 }
 
-dependencies {
-    testImplementation(kotlin("test"))
+allprojects {
+    version = "1.0.0"
+    group = "io.connorwyatt.jitpack-test-library"
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+subprojects {
+    apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "maven-publish")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
 
-kotlin {
-    jvmToolchain(8)
+    spotless {
+        kotlin {
+            target("**/*.kt", "**/*.kts")
+            ktfmt(project.properties["ktfmtVersion"] as String).kotlinlangStyle()
+        }
+    }
+
+    tasks.withType(Test::class) {
+        useJUnitPlatform()
+    }
 }
