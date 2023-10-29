@@ -27,6 +27,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "com.diffplug.spotless")
+    apply(plugin = "java")
     apply(plugin = "maven-publish")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
